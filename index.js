@@ -6,11 +6,14 @@ const config = require('./config/key')
 
 const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
+const cookieParser = require('cookie-parser')
 const { User } = require('./models/User')
 
 // body-parser를 앱 내에서 사용하려면 다음과 같이 작성
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json());
+
+app.use(cookieParser());
 
 mongoose.connect(config.mongoURI, {
     useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true, useFindAndModify: false
@@ -48,9 +51,14 @@ app.post('/login', (req, res) => {
             if(!isMatch)
                 return res.json({ loginSuccess: false, message: "비밀번호가 틀렸습니다." })
             // 비밀번호까지 맞다면 토큰을 생성하기
-            return res.json({ loginSuccess: true })
-            // user.generateToken((err, user) => { 
-            // })
+            user.generateToken((err, user) => {
+                if(err) return res.status(400).send(err);
+
+                // token 저장 -> localStorage
+                res.cookie("x_auth", user.token)
+                .status(200)
+                .json({ loginSuccess: true, userId: user._id })
+            })
         })
     })
 })
