@@ -7,6 +7,8 @@ const config = require('./config/key')
 const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
+
+const { auth } = require('./middleware/auth')
 const { User } = require('./models/User')
 
 // body-parser를 앱 내에서 사용하려면 다음과 같이 작성
@@ -60,6 +62,20 @@ app.post('/login', (req, res) => {
                 .json({ loginSuccess: true, userId: user._id })
             })
         })
+    })
+})
+
+// auth router
+app.get('/api/user/auth', auth, (req, res) => {
+    // 미들웨어를 통과했다는 얘기는 Authentication이 True
+    res.status(200).json({
+        _id: req.user_.id,
+        isAdmin: req.user.role === 0 ? false : true,
+        isAuth: true,
+        email : req.user.email,
+        name: req.user.name,
+        role: req.user.role,
+        image: req.user.image,
     })
 })
 
