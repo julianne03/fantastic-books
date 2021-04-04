@@ -26,7 +26,7 @@ mongoose.connect(config.mongoURI, {
 app.get('/', (req, res) => res.send('Hello world!'))
 
 // register router
-app.post('/register', (req, res) => {
+app.post('/api/users/register', (req, res) => {
     const user = new User(req.body)
 
     // db에 user를 저장
@@ -39,7 +39,7 @@ app.post('/register', (req, res) => {
 })
 
 // login router
-app.post('/login', (req, res) => {
+app.post('/api/users/login', (req, res) => {
     // 1. 사용자에게 받은 이메일이 디비에 있는지 조회
     User.findOne({ email: req.body.email }, (err, user) => {
         if(!user) {
@@ -66,10 +66,10 @@ app.post('/login', (req, res) => {
 })
 
 // auth router
-app.get('/api/user/auth', auth, (req, res) => {
+app.get('/api/users/auth', auth, (req, res) => {
     // 미들웨어를 통과했다는 얘기는 Authentication이 True
     res.status(200).json({
-        _id: req.user_.id,
+        _id: req.user._id,
         isAdmin: req.user.role === 0 ? false : true,
         isAuth: true,
         email : req.user.email,
@@ -77,6 +77,18 @@ app.get('/api/user/auth', auth, (req, res) => {
         role: req.user.role,
         image: req.user.image,
     })
+})
+
+// logout router
+app.get('/api/users/logout', auth, (req, res) => {
+    User.findOneAndUpdate({ _id: req.user._id },
+        { token: "" }
+        , (err, user) => {
+            if(err) return res.json({ success: false, err });
+            return res.status(200).send({
+                success: true
+            })
+        })
 })
 
 app.listen(port, () => console.log(`Example app listening on port ${port}`))

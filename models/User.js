@@ -69,7 +69,7 @@ userSchema.methods.generateToken = function(cb) {
     })
 }
 
-userSchema.static.findByToken = (token, cb) => {
+userSchema.statics.findByToken = function(token, cb) {
     var user = this;
 
     // token 복호화
